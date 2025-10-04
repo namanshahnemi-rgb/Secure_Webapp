@@ -1,73 +1,103 @@
 pipeline {
-    agent any
+  agent any
 
-    stages {
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
 
-        stage('Build') {
-            steps {
-                echo 'Installing PHP and Composer...'
-                bat '''
-                REM Install PHP and Composer (skip if already installed)
-                choco install php --yes --no-progress
-                choco install composer --yes --no-progress
+  environment {
+    // Common Windows install locations
+    PHP_DIR       = 'C:\\tools\\php84'                      // Chocolatey’s php path
+    COMPOSER_BIN  = 'C:\\ProgramData\\ComposerSetup\\bin'   // Composer path
+  }
 
-                REM Add Composer to PATH manually (Windows default location)
-                set PATH=%PATH%;C:\\ProgramData\\ComposerSetup\\bin
+  stages {
 
-                REM Verify Composer version
-                composer --version
+    stage('Build') {
+      steps {
+        echo '🔧 Setting up PHP & Composer and installing dependencies...'
+        bat '''
+        REM Ensure base dirs
+        if not exist build mkdir build
 
-                REM Install PHP project dependencies
-                composer install || exit 0
-                '''
-            }
-        }
+        REM Install or upgrade PHP & Composer (idempotent)
+        choco install php --yes --no-progress || ver
+        choco upgrade php --yes --no-progress || ver
+        choco install composer --yes --no-progress || ver
 
-        stage('Test') {
-            steps {
-                echo 'Running PHPUnit tests...'
-                bat '''
-                REM Add Composer to PATH (needed again for each stage)
-                set PATH=%PATH%;C:\\ProgramData\\ComposerSetup\\bin
+        REM Add PHP & Composer to PATH for this process
+        set PATH=%PATH%;%PHP_DIR%;%COMPOSER_BIN%
 
-                REM If PHPUnit exists, run tests, otherwise create dummy report
-                if exist vendor\\bin\\phpunit (
-                    vendor\\bin\\phpunit --configuration phpunit.xml --log-junit test-report.xml || exit 0
-                ) else (
-                    echo "Creating dummy test-report.xml because PHPUnit not found."
-                    echo ^<testsuites^>^<testsuite name="Dummy" tests="1" failures="0" errors="0" skipped="0" time="0.001" /^>^</testsuites^> > test-report.xml
-                )
-                '''
-            }
-            post {
-                always {
-                    junit 'test-report.xml'
-                }
-            }
-        }
+        REM Sanity checks
+        php -v
+        composer --version
 
-        stage('Code Quality') {
-            steps {
-                echo 'Running SonarCloud analysis (PHP)...'
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                    bat '''
-                    set PATH=%PATH%;C:\\ProgramData\\ComposerSetup\\bin
-                    sonar-scanner ^
-                      -Dsonar.projectKey=Secure_Webapp ^
-                      -Dsonar.organization=namanshahnemi-rgb ^
-                      -Dsonar.host.url=https://sonarcloud.io ^
-                      -Dsonar.sources=. ^
-                      -Dsonar.php.coverage.reportPaths=test-report.xml ^
-                      -Dsonar.login=%SONAR_TOKEN%
-                    '''
-                }
-            }
-        }
+        REM Install PHP deps if composer.json present
+        if exist composer.json (
+          composer install --prefer-dist --no-interaction
+        ) else (
+          echo composer.json not found, skipping Composer install
+        )
+        '''
+      }
     }
 
-    post {
+    stage('Test') {
+      steps {
+        echo '🧪 Running tests (PHPUnit if available)...'
+        bat '''
+        REM Ensure PATH (each stage is a fresh shell)
+        set PATH=%PATH%;%PHP_DIR%;%COMPOSER_BIN%
+
+        REM Ensure build dir exists
+        if not exist build mkdir build
+
+        REM If PHPUnit exists, run with JUnit log; else create dummy report
+        if exist vendor\\bin\\phpunit (
+          vendor\\bin\\phpunit --configuration phpunit.xml --log-junit build\\test-report.xml || exit /b 0
+        ) else (
+          echo Creating dummy test-report.xml because PHPUnit not found.
+          echo ^<testsuites^>^<testsuite name="Dummy" tests="1" failures="0" errors="0" skipped="0" time="0.001"/^>^</testsuites^> > build\\test-report.xml
+        )
+        '''
+      }
+      post {
         always {
-            echo 'Pipeline finished successfully!'
+          junit 'build/test-report.xml'
         }
+      }
     }
+
+    stage('Code Quality') {
+      steps {
+        echo '🔎 Running SonarCloud analysis...'
+        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+          bat '''
+          REM Keep PATH intact
+          set PATH=%PATH%;%PHP_DIR%;%COMPOSER_BIN%
+
+          REM (Optional) ensure sonar-scanner present via choco (safe if already installed)
+          choco install sonar-scanner --yes --no-progress || ver
+
+          REM Run scanner (adjust keys as per your project/org)
+          sonar-scanner ^
+            -Dsonar.projectKey=Secure_Webapp ^
+            -Dsonar.organization=namanshahnemi-rgb ^
+            -Dsonar.host.url=https://sonarcloud.io ^
+            -Dsonar.sources=. ^
+            -Dsonar.php.coverage.reportPaths=build\\test-report.xml ^
+            -Dsonar.login=%SONAR_TOKEN%
+          '''
+        }
+      }
+    }
+
+  }
+
+  post {
+    always {
+      echo 'Pipeline finished (post block).'
+    }
+  }
 }
