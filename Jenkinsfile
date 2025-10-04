@@ -1,21 +1,14 @@
 pipeline {
     agent any
 
-    environment {
-        // Add Chocolatey and PHP to PATH
-        PATH = "C:\\ProgramData\\chocolatey\\bin;${env.PATH}"
-    }
-
     stages {
-
         stage('Build') {
             steps {
                 echo 'Installing PHP & PHPUnit...'
                 bat '''
                 choco install php --yes --force
-                choco install phpunit --yes --force
-                php -v
-                phpunit --version
+                curl -L -o phpunit.phar https://phar.phpunit.de/phpunit-9.phar
+                php phpunit.phar --version
                 '''
             }
         }
@@ -24,7 +17,7 @@ pipeline {
             steps {
                 echo 'Running PHPUnit tests...'
                 bat '''
-                phpunit --log-junit test-report.xml || exit 0
+                php phpunit.phar --log-junit test-report.xml || exit 0
                 '''
             }
             post {
