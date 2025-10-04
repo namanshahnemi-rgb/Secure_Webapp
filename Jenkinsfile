@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = credentials('SONAR_TOKEN') // Make sure this credential exists in Jenkins
+        SONAR_TOKEN = credentials('SONAR_TOKEN') // Jenkins secret text credential
     }
 
     stages {
 
-        stage('Build') {
+        stage('Build PHP') {
             steps {
                 echo 'Installing PHP & PHPUnit...'
                 bat '''
-                REM Install PHP via Chocolatey
+                REM Install PHP via Chocolatey (if needed)
                 choco install php --yes --force
 
                 REM Download PHPUnit
@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Test PHP') {
             steps {
                 echo 'Running PHPUnit tests...'
                 bat '''
@@ -37,28 +37,28 @@ pipeline {
                         if (fileExists('test-report.xml')) {
                             junit 'test-report.xml'
                         } else {
-                            echo "No test report found, skipping junit publish."
+                            echo "No PHP test report found, skipping junit publish."
                         }
                     }
                 }
             }
         }
 
-       stage('Code Quality') {
-    steps {
-        echo 'Running SonarCloud analysis...'
-        // Use the Sonar token stored in Jenkins credentials
-        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-            bat """
-            mvn clean verify sonar:sonar ^
-              -Dsonar.projectKey=Secure_Webapp ^
-              -Dsonar.organization=namanshahnemi-rgb ^
-              -Dsonar.host.url=https://sonarcloud.io ^
-              -Dsonar.login=%SONAR_TOKEN%
-            """
+        stage('Code Quality') {
+            steps {
+                echo 'Running SonarCloud analysis using Maven wrapper...'
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    bat """
+                    REM Use Maven wrapper to run SonarCloud scan
+                    .\\mvnw clean verify sonar:sonar ^
+                      -Dsonar.projectKey=Secure_Webapp ^
+                      -Dsonar.organization=namanshahnemi-rgb ^
+                      -Dsonar.host.url=https://sonarcloud.io ^
+                      -Dsonar.login=%SONAR_TOKEN%
+                    """
+                }
+            }
         }
-    }
-}
 
         stage('Security') {
             steps {
