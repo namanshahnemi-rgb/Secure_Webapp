@@ -48,7 +48,6 @@ pipeline {
                       -Dsonar.php.coverage.reportPaths=test-report.xml ^
                       -Dsonar.login=%SONAR_TOKEN%
                     '''
-                    '''
                 }
             }
         }
@@ -56,7 +55,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished!'
+            echo 'Pipeline finished successfully!'
         }
     }
 }
