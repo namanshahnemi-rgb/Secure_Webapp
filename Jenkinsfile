@@ -45,20 +45,22 @@ pipeline {
         }
 
         stage('Code Quality') {
-            steps {
-                echo 'Running SonarCloud analysis using Maven wrapper...'
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                    bat """
-                    REM Use Maven wrapper to run SonarCloud scan
-                    .\\mvnw clean verify sonar:sonar ^
-                      -Dsonar.projectKey=Secure_Webapp ^
-                      -Dsonar.organization=namanshahnemi-rgb ^
-                      -Dsonar.host.url=https://sonarcloud.io ^
-                      -Dsonar.login=%SONAR_TOKEN%
-                    """
-                }
-            }
+    steps {
+        echo 'Running SonarCloud analysis (PHP)...'
+        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+            bat '''
+            sonar-scanner ^
+              -Dsonar.projectKey=Secure_Webapp ^
+              -Dsonar.organization=namanshahnemi-rgb ^
+              -Dsonar.host.url=https://sonarcloud.io ^
+              -Dsonar.sources=. ^
+              -Dsonar.php.coverage.reportPaths=test-report.xml ^
+              -Dsonar.login=%SONAR_TOKEN%
+            '''
+            '''
         }
+    }
+}
 
         stage('Security') {
             steps {
