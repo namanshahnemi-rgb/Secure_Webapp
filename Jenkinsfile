@@ -3,36 +3,35 @@ pipeline {
 
     stages {
         stage('Build') {
-            steps {
-                echo 'Installing PHP & PHPUnit...'
-                bat '''
-                choco install php --yes --force
-                curl -L -o phpunit.phar https://phar.phpunit.de/phpunit-9.phar
-                php phpunit.phar --version
-                '''
-            }
-        }
+    steps {
+        echo 'Installing PHP & PHPUnit...'
+        bat '''
+        choco install php --yes --force
+        curl -L -o phpunit.phar https://phar.phpunit.de/phpunit-9.phar
+        C:\\tools\\php\\php.exe phpunit.phar --version
+        '''
+    }
+}
 
-        stage('Test') {
-            steps {
-                echo 'Running PHPUnit tests...'
-                bat '''
-                php phpunit.phar --log-junit test-report.xml || exit 0
-                '''
-            }
-            post {
-                always {
-                    script {
-                        if (fileExists('test-report.xml')) {
-                            junit 'test-report.xml'
-                        } else {
-                            echo "No test report found, skipping junit publish."
-                        }
-                    }
+stage('Test') {
+    steps {
+        echo 'Running PHPUnit tests...'
+        bat '''
+        C:\\tools\\php\\php.exe phpunit.phar --log-junit test-report.xml || exit 0
+        '''
+    }
+    post {
+        always {
+            script {
+                if (fileExists('test-report.xml')) {
+                    junit 'test-report.xml'
+                } else {
+                    echo "No test report found, skipping junit publish."
                 }
             }
         }
-
+    }
+}
         stage('Code Quality') {
             steps {
                 echo 'Running SonarCloud analysis...'
