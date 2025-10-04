@@ -44,13 +44,13 @@ pipeline {
             }
         }
 
-        stage('Code Quality') {
+       stage('Code Quality') {
     steps {
         echo 'Running SonarCloud analysis...'
+        // Use the Sonar token stored in Jenkins credentials
         withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
             bat """
-            REM Run local SonarScanner without installing
-            .\\sonar-scanner\\bin\\sonar-scanner.bat ^
+            mvn clean verify sonar:sonar ^
               -Dsonar.projectKey=Secure_Webapp ^
               -Dsonar.organization=namanshahnemi-rgb ^
               -Dsonar.host.url=https://sonarcloud.io ^
@@ -59,7 +59,6 @@ pipeline {
         }
     }
 }
-
 
         stage('Security') {
             steps {
