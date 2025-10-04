@@ -1,13 +1,23 @@
 pipeline {
     agent any
 
+    environment {
+        SONAR_TOKEN = credentials('SONAR_TOKEN') // Make sure you have this credential in Jenkins
+    }
+
     stages {
+
         stage('Build') {
             steps {
                 echo 'Installing PHP & PHPUnit...'
                 bat '''
+                REM Install PHP via Chocolatey
                 choco install php --yes --force
+
+                REM Download PHPUnit
                 curl -L -o phpunit.phar https://phar.phpunit.de/phpunit-9.phar
+
+                REM Verify installation
                 C:\\tools\\php84\\php.exe phpunit.phar --version
                 '''
             }
@@ -17,6 +27,7 @@ pipeline {
             steps {
                 echo 'Running PHPUnit tests...'
                 bat '''
+                REM Run PHPUnit tests and generate XML report
                 C:\\tools\\php84\\php.exe phpunit.phar --log-junit test-report.xml || exit 0
                 '''
             }
@@ -36,15 +47,17 @@ pipeline {
         stage('Code Quality') {
             steps {
                 echo 'Running SonarCloud analysis...'
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                    bat '''
-                    sonar-scanner ^
-                      -Dsonar.projectKey=Secure_Webapp ^
-                      -Dsonar.organization=namanshahnemi-rgb ^
-                      -Dsonar.host.url=https://sonarcloud.io ^
-                      -Dsonar.login=%SONAR_TOKEN%
-                    '''
-                }
+                bat '''
+                REM Install SonarScanner if missing
+                choco install sonar-scanner --yes --force
+
+                REM Run SonarCloud analysis
+                sonar-scanner ^
+                  -Dsonar.projectKey=Secure_Webapp ^
+                  -Dsonar.organization=namanshahnemi-rgb ^
+                  -Dsonar.host.url=https://sonarcloud.io ^
+                  -Dsonar.login=%SONAR_TOKEN%
+                '''
             }
         }
 
@@ -52,11 +65,22 @@ pipeline {
             steps {
                 echo 'Running Trivy scan...'
                 bat '''
+                REM Download Trivy
                 curl -LO https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.0_windows-64bit.zip
-                tar -xf trivy_0.50.0_windows-64bit.zip
-                trivy fs --severity HIGH,CRITICAL --exit-code 0 .
+
+                REM Extract Trivy
+                powershell -Command "Expand-Archive trivy_0.50.0_windows-64bit.zip -DestinationPath . -Force"
+
+                REM Run Trivy scan
+                .\\trivy.exe fs --severity HIGH,CRITICAL --exit-code 0 .
                 '''
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished!'
         }
     }
 }
