@@ -1,0 +1,10 @@
+<!doctype html>
+<html><body>
+<h2>FIX file upload</h2>
+<form method="post" enctype="multipart/form-data" action="/fix/upload">
+  <input type="file" name="file"/><br/>
+  <button>Upload</button>
+</form>
+<p th:text="${msg}"></p>
+<p><a href="/vuln/upload">See vulnerable upload</a></p>
+</body></html>

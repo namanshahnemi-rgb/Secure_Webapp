@@ -1,0 +1,9 @@
+<!doctype html>
+<html>
+<body>
+<h2>FIX SQL demo (safe usage)</h2>
+<ul>
+  <li th:each="u: ${users}" th:text="${u.username} + ' (' + u.email + ')'"></li>
+</ul>
+<p><a href="/vuln/sql">Vulnerable version</a></p>
+</body></html>

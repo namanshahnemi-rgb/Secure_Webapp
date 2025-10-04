@@ -1,0 +1,13 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<h2>VULN CSRF (form without token)</h2>
+<form method="post" action="/vuln/csrf">
+  <label>email: <input name="email"/></label>
+  <button>Submit</button>
+</form>
+<p th:text="${msg}"></p>
+<p><a href="/fix/csrf">See fixed CSRF</a></p>
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

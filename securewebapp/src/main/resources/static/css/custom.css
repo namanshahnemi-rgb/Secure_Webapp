@@ -1,0 +1,49 @@
+/* custom.css — small, clean UI tweaks */
+:root{
+  --brand:#0d6efd;
+  --muted:#6c757d;
+  --bg:#f8f9fa;
+  --card-bg:#ffffff;
+  --radius:12px;
+  --shadow: 0 6px 18px rgba(18,38,63,0.08);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+body {
+  background: var(--bg);
+  color: #111827;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.container { max-width: 980px; }
+
+.card-app {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+/* form tweaks */
+.form-control, .form-select {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* file upload tweaks */
+.custom-file {
+  display:flex; gap:8px; align-items:center;
+}
+
+/* small helpers */
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:0.95rem; }
+.small-muted { color: var(--muted); font-size:0.9rem; }
+
+footer.site-footer {
+  padding: 18px 0;
+  color: var(--muted);
+  text-align:center;
+  font-size:0.9rem;
+}

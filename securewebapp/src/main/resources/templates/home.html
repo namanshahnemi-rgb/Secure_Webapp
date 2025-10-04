@@ -1,0 +1,26 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head"></head>
+<body>
+  <div th:replace="fragments/header :: nav"></div>
+
+  <div class="container mt-4">
+    <h1>Welcome to SecureWebApp</h1>
+    <ul class="list-group">
+     <li class="list-group-item"><a th:href="@{/vuln/xss}">Vulnerable XSS</a></li>
+    <li class="list-group-item"><a th:href="@{/fix/xss}">Fixed XSS</a></li>
+    <li class="list-group-item"><a th:href="@{/vuln/sql}">Vulnerable SQL</a></li>
+    <li class="list-group-item"><a th:href="@{/fix/sql}">Fixed SQL</a></li>
+    <li class="list-group-item"><a th:href="@{/vuln/upload}">Vulnerable Upload</a></li>
+    <li class="list-group-item"><a th:href="@{/fix/upload}">Fixed Upload</a></li>
+    <li class="list-group-item"><a th:href="@{/vuln/csrf}">Vulnerable CSRF</a></li>
+    <li class="list-group-item"><a th:href="@{/fix/csrf}">Fixed CSRF</a></li>
+    <li class="list-group-item"><a th:href="@{/vuln/ssrf}">Vulnerable SSRF</a></li>
+    <li class="list-group-item"><a th:href="@{/fix/ssrf}">Fixed SSRF</a></li>
+    <li class="list-group-item"><a th:href="@{/h2-console}">H2 Console</a></li>
+    </ul>
+  </div>
+
+  <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!doctype html>
+<html>
+<head><title>FIX XSS</title></head>
+<body>
+  <h2>Fixed XSS demo</h2>
+  <form><input name="msg" placeholder="message"/><button>Show</button></form>
+  <h3>Output (ESCAPED):</h3>
+  <div th:text="${msg}">no msg</div>
+  <p><a href="/vuln/xss">See vulnerable version</a></p>
+</body></html>

@@ -1,0 +1,29 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: head"></head>
+<body>
+  <div th:replace="fragments/header :: nav"></div>
+
+  <div class="container-main">
+    <div class="card-app">
+      <h2 class="mb-3">Vulnerable XSS Demo</h2>
+
+      <form method="get" class="mb-3" data-validate="true">
+        <div class="mb-3">
+          <input class="form-control" name="msg" placeholder="Type something (e.g. <script>alert(1)</script>)" required />
+        </div>
+        <button class="btn btn-primary">Show</button>
+      </form>
+
+      <hr/>
+
+      <h5>Output (UNESCAPED — intentionally vulnerable):</h5>
+      <div class="alert alert-light border mt-2" th:utext="${msg}">[message will show here]</div>
+
+      <p class="mt-3"><a class="link-primary" th:href="@{/fix/xss}">See fixed version</a></p>
+    </div>
+  </div>
+
+  <div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

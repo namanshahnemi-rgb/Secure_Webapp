@@ -1,0 +1,10 @@
+<!doctype html>
+<html><body>
+<h2>VULN SSRF demo</h2>
+<form method="post" action="/vuln/ssrf">
+  <input name="url" placeholder="http://example.com"/>
+  <button>Fetch</button>
+</form>
+<pre th:text="${result}"></pre>
+<p><a href="/fix/ssrf">See fixed SSRF</a></p>
+</body></html>

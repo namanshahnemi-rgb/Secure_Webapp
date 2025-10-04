@@ -1,0 +1,10 @@
+<!doctype html>
+<html><body>
+<h2>VULN file upload</h2>
+<form method="post" enctype="multipart/form-data" action="/vuln/upload">
+  <input type="file" name="file"/><br/>
+  <button>Upload</button>
+</form>
+<p th:text="${msg}"></p>
+<p><a href="/fix/upload">See fixed upload</a></p>
+</body></html>

@@ -1,0 +1,10 @@
+<!doctype html>
+<html>
+<body>
+<h2>VULN SQL demo (listing DB content)</h2>
+<form><input name="q" placeholder="search (not used)"/><button>Search</button></form>
+<ul>
+  <li th:each="u: ${users}" th:text="${u.username} + ' (' + u.email + ')'"></li>
+</ul>
+<p><a href="/fix/sql">Fixed version</a></p>
+</body></html>

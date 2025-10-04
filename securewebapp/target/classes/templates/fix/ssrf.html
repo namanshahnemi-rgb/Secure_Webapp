@@ -1,0 +1,10 @@
+<!doctype html>
+<html><body>
+<h2>FIX SSRF demo (host whitelist)</h2>
+<form method="post" action="/fix/ssrf">
+  <input name="url" placeholder="https://httpbin.org/get"/>
+  <button>Fetch</button>
+</form>
+<pre th:text="${result}"></pre>
+<p><a href="/vuln/ssrf">See vulnerable SSRF</a></p>
+</body></html>
