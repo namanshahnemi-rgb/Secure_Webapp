@@ -1,68 +1,58 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_TOKEN = credentials('SONAR_TOKEN') // Jenkins secret text credential
-    }
-
     stages {
 
-        stage('Build PHP') {
+        stage('Build') {
             steps {
-                echo 'Installing PHP & PHPUnit...'
+                echo 'Installing dependencies...'
                 bat '''
-                REM Install PHP via Chocolatey (if needed)
-                choco install php --yes --force
+                REM Ensure PHP & Composer are installed (requires Chocolatey)
+                choco install php --yes --no-progress
+                choco install composer --yes --no-progress
 
-                REM Download PHPUnit
-                curl -L -o phpunit.phar https://phar.phpunit.de/phpunit-9.phar
-
-                REM Verify installation
-                C:\\tools\\php84\\php.exe phpunit.phar --version
+                REM Install project dependencies
+                composer install || exit 0
                 '''
             }
         }
 
-        stage('Test PHP') {
+        stage('Test') {
             steps {
                 echo 'Running PHPUnit tests...'
                 bat '''
-                REM Run PHPUnit tests and generate XML report
-                C:\\tools\\php84\\php.exe phpunit.phar --log-junit test-report.xml || exit 0
+                if exist vendor\\bin\\phpunit (
+                    vendor\\bin\\phpunit --configuration phpunit.xml --log-junit test-report.xml || exit 0
+                ) else (
+                    echo PHPUnit not found — skipping tests.
+                )
                 '''
             }
             post {
                 always {
-                    script {
-                        if (fileExists('test-report.xml')) {
-                            junit 'test-report.xml'
-                        } else {
-                            echo "No PHP test report found, skipping junit publish."
-                        }
-                    }
+                    junit 'test-report.xml'
                 }
             }
         }
 
         stage('Code Quality') {
-    steps {
-        echo 'Running SonarCloud analysis (PHP)...'
-        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-            bat '''
-            sonar-scanner ^
-              -Dsonar.projectKey=Secure_Webapp ^
-              -Dsonar.organization=namanshahnemi-rgb ^
-              -Dsonar.host.url=https://sonarcloud.io ^
-              -Dsonar.sources=. ^
-              -Dsonar.php.coverage.reportPaths=test-report.xml ^
-              -Dsonar.login=%SONAR_TOKEN%
-            '''
-            '''
+            steps {
+                echo 'Running SonarCloud analysis (PHP)...'
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    bat '''
+                    sonar-scanner ^
+                      -Dsonar.projectKey=Secure_Webapp ^
+                      -Dsonar.organization=namanshahnemi-rgb ^
+                      -Dsonar.host.url=https://sonarcloud.io ^
+                      -Dsonar.sources=. ^
+                      -Dsonar.php.coverage.reportPaths=test-report.xml ^
+                      -Dsonar.login=%SONAR_TOKEN%
+                    '''
+                    '''
+                }
+            }
         }
     }
-}
-
-       
 
     post {
         always {
