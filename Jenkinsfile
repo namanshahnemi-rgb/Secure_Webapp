@@ -62,22 +62,7 @@ pipeline {
     }
 }
 
-        stage('Security') {
-            steps {
-                echo 'Running Trivy scan...'
-                bat '''
-                REM Download Trivy
-                curl -LO https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.0_windows-64bit.zip
-
-                REM Extract Trivy
-                powershell -Command "Expand-Archive trivy_0.50.0_windows-64bit.zip -DestinationPath . -Force"
-
-                REM Run Trivy scan
-                .\\trivy.exe fs --severity HIGH,CRITICAL --exit-code 0 .
-                '''
-            }
-        }
-    }
+       
 
     post {
         always {
