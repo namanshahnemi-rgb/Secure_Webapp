@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_TOKEN = credentials('SONAR_TOKEN') // Make sure you have this credential in Jenkins
+        SONAR_TOKEN = credentials('SONAR_TOKEN') // Make sure this credential exists in Jenkins
     }
 
     stages {
@@ -47,17 +47,16 @@ pipeline {
         stage('Code Quality') {
             steps {
                 echo 'Running SonarCloud analysis...'
-                bat '''
-                REM Install SonarScanner if missing
-                choco install sonar-scanner --yes --force
-
-                REM Run SonarCloud analysis
-                sonar-scanner ^
-                  -Dsonar.projectKey=Secure_Webapp ^
-                  -Dsonar.organization=namanshahnemi-rgb ^
-                  -Dsonar.host.url=https://sonarcloud.io ^
-                  -Dsonar.login=%SONAR_TOKEN%
-                '''
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    bat """
+                    REM Run SonarCloud using full path to sonar-scanner
+                    C:\\tools\\sonar-scanner\\bin\\sonar-scanner.bat ^
+                      -Dsonar.projectKey=Secure_Webapp ^
+                      -Dsonar.organization=namanshahnemi-rgb ^
+                      -Dsonar.host.url=https://sonarcloud.io ^
+                      -Dsonar.login=%SONAR_TOKEN%
+                    """
+                }
             }
         }
 
