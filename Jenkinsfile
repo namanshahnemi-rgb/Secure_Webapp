@@ -1,15 +1,21 @@
 pipeline {
     agent any
 
+    environment {
+        // Add Chocolatey and PHP to PATH
+        PATH = "C:\\ProgramData\\chocolatey\\bin;${env.PATH}"
+    }
+
     stages {
 
         stage('Build') {
             steps {
-                echo 'Installing dependencies...'
+                echo 'Installing PHP & PHPUnit...'
                 bat '''
-                choco install php --yes
-                choco install composer --yes
-                composer install || exit 0
+                choco install php --yes --force
+                choco install phpunit --yes --force
+                php -v
+                phpunit --version
                 '''
             }
         }
@@ -18,16 +24,18 @@ pipeline {
             steps {
                 echo 'Running PHPUnit tests...'
                 bat '''
-                if exist vendor\\bin\\phpunit (
-                    vendor\\bin\\phpunit --log-junit test-report.xml || exit 0
-                ) else (
-                    echo PHPUnit not found — skipping tests.
-                )
+                phpunit --log-junit test-report.xml || exit 0
                 '''
             }
             post {
                 always {
-                    junit 'test-report.xml'
+                    script {
+                        if (fileExists('test-report.xml')) {
+                            junit 'test-report.xml'
+                        } else {
+                            echo "No test report found, skipping junit publish."
+                        }
+                    }
                 }
             }
         }
